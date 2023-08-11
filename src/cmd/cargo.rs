@@ -5,6 +5,10 @@ use crate::conf::Configuration;
 pub fn build(conf: &Configuration) -> Result<()> {
     let mut args: Vec<String> = vec![];
 
+    if conf.nightly {
+        args.push("+nightly".into());
+    }
+
     args.push("build".into());
 
     if conf.target_dir != "target" {

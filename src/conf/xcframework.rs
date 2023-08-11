@@ -12,6 +12,7 @@ lazy_static::lazy_static! {
     static ref IOS_DEFAULT: Vec<Triple> = vec![triple!("aarch64-apple-ios")];
     static ref IOS_SIM_DEFAULT: Vec<Triple> =vec![triple!("aarch64-apple-ios-sim"), triple!("x86_64-apple-ios")];
     static ref MACOS_DEFAULT: Vec<Triple> = vec![triple!("x86_64-apple-darwin"), triple!("aarch64-apple-darwin")];
+    static ref MAC_CATALYST_DEFAULT: Vec<Triple> = vec![triple!("x86_64-apple-ios-macabi"), triple!("aarch64-apple-ios-macabi")];
 }
 
 #[derive(Deserialize, Debug, Clone, clap::ValueEnum, PartialEq, Eq)]
@@ -61,18 +62,24 @@ pub struct XCFrameworkConfiguration {
     #[serde(default)]
     pub iOS: bool,
 
+    #[serde(default)]
+    pub mac_catalyst: bool,
+
     #[serde(default = "iOS_targets")]
     pub iOS_targets: Vec<Triple>,
 
     #[serde(default = "iOS_sim_targets")]
     pub iOS_simulator_targets: Vec<Triple>,
+
+    #[serde(default = "mac_catalyst_targets")]
+    pub mac_catalyst_targets: Vec<Triple>,
 }
 
 pub fn zip_default() -> bool {
     true
 }
 
-pub fn macOS_default() -> Vec<Triple> {
+fn macOS_default() -> Vec<Triple> {
     MACOS_DEFAULT.clone()
 }
 
@@ -82,6 +89,10 @@ fn iOS_targets() -> Vec<Triple> {
 
 fn iOS_sim_targets() -> Vec<Triple> {
     IOS_SIM_DEFAULT.clone()
+}
+
+fn mac_catalyst_targets() -> Vec<Triple> {
+    MAC_CATALYST_DEFAULT.clone()
 }
 
 impl XCFrameworkConfiguration {
@@ -121,8 +132,8 @@ impl XCFrameworkConfiguration {
             bail!("The include-dir '{}' does not exist", self.include_dir);
         }
 
-        if !self.iOS && !self.macOS {
-            bail!("Nothing to build. At least one the fields 'iOS' or 'macOS' must be set to true");
+        if !self.iOS && !self.macOS && !self.mac_catalyst {
+            bail!("Nothing to build. At least one the fields 'iOS', 'macOS', or 'mac_catalyst' must be set to true");
         }
         use target_lexicon::OperatingSystem::*;
         validate_triples(&self.macOS_targets, &Darwin, false).context("field 'macOS-targets'")?;

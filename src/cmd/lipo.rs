@@ -23,6 +23,13 @@ pub fn assemble_libs(conf: &Configuration) -> Result<Vec<String>> {
             "macos",
         )?);
     }
+    if conf.cargo_section.mac_catalyst {
+        libs.push(join_or_copy(
+            conf,
+            &conf.cargo_section.mac_catalyst_targets,
+            "mac_catalyst",
+        )?);
+    }
 
     Ok(libs)
 }
